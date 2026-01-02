@@ -2,7 +2,7 @@ name: Update and Build Kernel
 
 on:
   schedule:
-    - cron: "0 4 * * 0" # Run weekly on Sunday at 4:00 UTC  push:
+    - cron: "0 4 * * 0" # Run weekly on Sunday at 4:00 UTC
   push:
     branches:
       - main
@@ -39,7 +39,7 @@ jobs:
           fi
 
       - name: Get Kernel Version
-        if: steps.update.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
+        if: steps.update.outputs.changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
         id: version
         run: |
           KERNEL_VERSION=$(nix eval --raw .#kernel.version)
@@ -55,11 +55,15 @@ jobs:
 
   build:
     needs: check-update
-    if: needs.check-update.outputs.changed == 'true' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
+    if: needs.check-update.outputs.changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'push'
     strategy:
       matrix:
-        system: [x86_64-linux, aarch64-linux]
+        include:
+          - system: x86_64-linux
+            runner: ubuntu-24.04
+          - system: aarch64-linux
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
 
@@ -69,14 +73,9 @@ jobs:
       - uses: cachix/install-nix-action@v25
         with:
           nix_path: nixpkgs=channel:${{ env.NIX_CHANNEL }}
-          # Enable emulation for aarch64 build on x86_64 runner
-          extra_nix_config: |
-            extra-platforms = aarch64-linux
 
-      # Setup QEMU for cross-compilation/emulation if needed
-      - name: Set up QEMU
-        if: matrix.system == 'aarch64-linux'
-        uses: docker/setup-qemu-action@v3
+      - name: Sync Flake Lock
+        run: nix flake update
 
       - name: Build and Upload to R2
         env:

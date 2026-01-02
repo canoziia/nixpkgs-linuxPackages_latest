@@ -73,7 +73,7 @@ jobs:
           remove_haskell: true
           remove_tool_cache: true
           remove_packages: "azure-cli google-cloud-cli microsoft-edge-stable google-chrome-stable firefox postgresql* temurin-* *llvm* mysql* dotnet-sdk-*"
-          remove_folders: "/usr/share/swift /usr/local/share/powershell /usr/local/lib/node_modules /usr/share/az* /usr/local/aws-cli /usr/share/miniconda /usr/local/share/chromium /usr/local/julia /usr/local/aws-sam-cli /usr/share/gradle"
+          remove_folders: "/usr/share/swift /usr/local/share/powershell /usr/local/lib/node_modules /usr/share/az* /usr/share/miniconda /usr/local/share/chromium /usr/local/julia /usr/local/aws-sam-cli /usr/share/gradle"
           rm_cmd: "rmz"
 
       - name: Check Disk Space
@@ -107,13 +107,7 @@ jobs:
           echo "$NIX_SECRET_KEY" > nix-secret.pem
           nix store sign --key-file nix-secret.pem --recursive "$OUT_PATH"
 
-          # 3. Clean up old cache (Only run once, e.g., on x86_64 job)
-          if [ "${{ matrix.system }}" = "x86_64-linux" ]; then
-             echo "Cleaning up old cache..."
-             aws s3 rm "s3://$CACHE_BUCKET" --recursive --endpoint-url "$R2_ENDPOINT" --region auto || true
-          fi
-
-          # 4. Upload to R2
+          # 3. Upload to R2
           echo "Uploading to R2..."
           nix copy --to "s3://$CACHE_BUCKET?endpoint=$R2_ENDPOINT&region=auto&compression=zstd" "$OUT_PATH"
 

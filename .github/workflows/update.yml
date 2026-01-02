@@ -73,7 +73,11 @@ jobs:
           remove_haskell: true
           remove_tool_cache: true
           remove_packages: "azure-cli google-cloud-cli microsoft-edge-stable google-chrome-stable firefox postgresql* temurin-* *llvm* mysql* dotnet-sdk-*"
+          remove_folders: "/usr/share/swift /usr/local/share/powershell /usr/local/lib/node_modules /usr/share/az* /usr/local/aws-cli /usr/share/miniconda /usr/local/share/chromium /usr/local/julia /usr/local/aws-sam-cli /usr/share/gradle"
           rm_cmd: "rmz"
+
+      - name: Check Disk Space
+        run: df -h
 
       - uses: actions/checkout@v4
 

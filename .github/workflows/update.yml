@@ -98,17 +98,21 @@ jobs:
           NIX_SECRET_KEY: ${{ secrets.NIX_SECRET_KEY }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
         run: |
-          # 1. Build the kernel for the specific system
+          # 1. Build the kernel for the specific system (ALL outputs)
           echo "Building for ${{ matrix.system }}..."
-          OUT_PATH=$(nix build .#packages.${{ matrix.system }}.kernel -L --print-out-paths)
-          echo "Built path: $OUT_PATH"
+          # Build all outputs (out, dev, etc.)
+          nix build .#packages.${{ matrix.system }}.kernel^* -L
 
-          # 2. Sign the path
+          # Get all output paths
+          OUT_PATHS=$(nix path-info .#packages.${{ matrix.system }}.kernel^*)
+          echo "Built paths: $OUT_PATHS"
+
+          # 2. Sign the paths
           echo "$NIX_SECRET_KEY" > nix-secret.pem
-          nix store sign --key-file nix-secret.pem --recursive "$OUT_PATH"
+          nix store sign --key-file nix-secret.pem --recursive $OUT_PATHS
 
           # 3. Upload to R2
           echo "Uploading to R2..."
-          nix copy --to "s3://$CACHE_BUCKET?endpoint=$R2_ENDPOINT&region=auto&compression=zstd" "$OUT_PATH"
+          nix copy --to "s3://$CACHE_BUCKET?endpoint=$R2_ENDPOINT&region=auto&compression=zstd" $OUT_PATHS
 
           rm nix-secret.pem

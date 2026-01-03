@@ -17,22 +17,44 @@
         "x86_64-linux"
         "aarch64-linux"
       ];
-
-      ath12kConfig = {
-        name = "ath12k-enable-6ghz";
-        patch = null;
-        extraConfig = ''
-          CFG80211_CERTIFICATION_ONUS y
-          ATH_REG_DYNAMIC_USER_REG_HINTS y
-          ATH_REG_DYNAMIC_USER_CERT_TESTING y
-        '';
-      };
     in
     {
       # 1. 导出 Overlay：这是给 NixOS 用户使用的最佳方式
       overlays.default = final: prev: {
         canoziiaKernel = prev.linuxPackages_latest.kernel.override {
-          kernelPatches = prev.linuxPackages_latest.kernel.kernelPatches ++ [ ath12kConfig ];
+          kernelPatches =
+            prev.linuxPackages_latest.kernel.kernelPatches
+            ++ [
+              {
+                name = "ath12k-enable-6ghz";
+                patch = null;
+                extraConfig = ''
+                  CFG80211_CERTIFICATION_ONUS y
+                  ATH_REG_DYNAMIC_USER_REG_HINTS y
+                  ATH_REG_DYNAMIC_USER_CERT_TESTING y
+                '';
+              }
+            ]
+            ++ prev.lib.optionals prev.stdenv.hostPlatform.isAarch64 [
+              {
+                name = "enable-dynamic-preemption";
+                patch = null;
+                extraConfig = ''
+                  PREEMPT_DYNAMIC y
+                  PREEMPT_RCU y
+                  PREEMPT_VOLUNTARY y
+                '';
+              }
+              {
+                name = "change-hz";
+                patch = null;
+                extraConfig = ''
+                  HZ_1000 y
+                  HZ 1000
+                '';
+              }
+            ]
+            ++ prev.lib.optionals prev.stdenv.hostPlatform.isx86_64 [ ];
         };
         linuxPackages_canoziia = final.linuxPackagesFor final.canoziiaKernel;
       };

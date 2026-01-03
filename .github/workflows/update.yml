@@ -25,6 +25,8 @@ jobs:
       - uses: cachix/install-nix-action@v25
         with:
           nix_path: nixpkgs=channel:${{ env.NIX_CHANNEL }}
+          extra_nix_config: |
+            accept-flake-config = true
 
       - name: Update flake inputs
         id: update
@@ -87,6 +89,8 @@ jobs:
       - uses: cachix/install-nix-action@v25
         with:
           nix_path: nixpkgs=channel:${{ env.NIX_CHANNEL }}
+          extra_nix_config: |
+            accept-flake-config = true
 
       - name: Sync Flake Lock
         run: nix flake update

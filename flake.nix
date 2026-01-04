@@ -53,6 +53,15 @@
                   HZ 1000
                 '';
               }
+              {
+                # For Android
+                name = "enable-dmabuf-heaps";
+                patch = null;
+                extraConfig = ''
+                  DMABUF_HEAPS y
+                  DMABUF_HEAPS_SYSTEM y
+                '';
+              }
             ]
             ++ prev.lib.optionals prev.stdenv.hostPlatform.isx86_64 [ ];
         };

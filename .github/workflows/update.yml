@@ -2,7 +2,7 @@ name: Update and Build Kernel
 
 on:
   schedule:
-    - cron: "0 4 * * 0" # Run weekly on Sunday at 4:00 UTC
+    - cron: "0 4 * * *" # Run daily at 4:00 UTC
   push:
     branches:
       - main

@@ -43,6 +43,8 @@
                   PREEMPT_DYNAMIC y
                   PREEMPT_RCU y
                   PREEMPT_VOLUNTARY y
+                  PREEMPT_NONE n
+                  PREEMPT n
                 '';
               }
               {

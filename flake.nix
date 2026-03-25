@@ -37,17 +37,6 @@
             ]
             ++ prev.lib.optionals prev.stdenv.hostPlatform.isAarch64 [
               {
-                name = "enable-dynamic-preemption";
-                patch = null;
-                extraConfig = ''
-                  PREEMPT_DYNAMIC y
-                  PREEMPT_RCU y
-                  PREEMPT_VOLUNTARY y
-                  PREEMPT_NONE n
-                  PREEMPT n
-                '';
-              }
-              {
                 name = "change-hz";
                 patch = null;
                 extraConfig = ''

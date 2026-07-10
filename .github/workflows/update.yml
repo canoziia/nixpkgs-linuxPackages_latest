@@ -2,7 +2,7 @@ name: Update and Build Kernel
 
 on:
   schedule:
-    - cron: "0 4 * * *" # Run daily at 4:00 UTC
+    - cron: "0 */6 * * *" # Run every 6 hours (00/06/12/18 UTC) to keep the cache warm for fresh nixos-unstable revs
   push:
     branches:
       - main
